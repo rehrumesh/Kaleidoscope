@@ -5,6 +5,10 @@
 #include <string>
 #include <vector>
 
+//----------------------
+// Lexer
+//----------------------
+
 enum Token {
 	tok_eof = -1,
 	tok_def = -2,
@@ -58,3 +62,66 @@ static int gettok(){
 	LastChar = getchar();
 	return ThisChar;
 }
+
+//-------------------------
+// AST
+//-------------------------
+class ExprAST{
+public:
+	virtual ~ExprAST(){}
+};
+
+class NumberExprAST : public ExprAST{
+	double Val;
+public:
+	NumberExprAST(double val) : Val(val){}
+};
+
+class VariableExprAST : public ExprAST{
+	std::string Name;
+public:
+	VariableExprAST(const std::string &name) : Name(name){}
+};
+
+class BinaryExprAST : public ExprAST{
+	char Op;
+	ExprAST *LHS, *RHS;
+public:
+	BinaryExprAST(char op, ExprAST *lhs, ExprAST *rhs)
+		: Op(op), LHS(lhs), RHS(rhs){}
+};
+
+class CallExprAST : public ExprAST{
+	std::string Callee;
+	std::vector<ExperAST*> Args;
+public:
+	CallExprAST(const std::string &callee, std::vector<ExprAST*> &args)
+		: Callee(callee), Args(args){}
+};
+
+class PrototypeAST{
+	std::string Name;
+	std::vector<std::string> Args;
+public:
+	PrototypeAST(const std::string &name, const std::vector<std::string> &args)
+    		: Name(name), Args(args) {}
+};
+
+class FunctionAST{
+	PrototypeAST *Proto;
+	ExprAST *Body;
+public:
+	FunctionAST(PrototypeAST *proto, ExprAST *body)
+    		: Proto(proto), Body(body) {}
+};
+
+
+static int CurTok;
+static int getNextToken(){
+	return CurTok = gettok();
+}
+
+/// Error* - These are little helper functions for error handling.
+ExprAST *Error(const char *Str) { fprintf(stderr, "Error: %s\n", Str);return 0;}
+PrototypeAST *ErrorP(const char *Str) { Error(Str); return 0; }
+FunctionAST *ErrorF(const char *Str) { Error(Str); return 0; }
